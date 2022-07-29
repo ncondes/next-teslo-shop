@@ -10,6 +10,7 @@ export interface IProduct {
    title: string;
    type: IValidType;
    gender: 'men' | 'women' | 'kid' | 'unisex';
+
    createAt: string;
    updatedAt: string;
 }
