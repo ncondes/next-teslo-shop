@@ -4,19 +4,34 @@ import { ICartProduct } from '../../interfaces';
 import { CartContext, cartReducer } from './';
 
 export interface CartState {
+   isCartLoaded: boolean;
    cart: ICartProduct[];
    numberOfProducts: number;
    subTotal: number;
    tax: number;
    total: number;
+   shippingAddress?: ShipingAddress;
+}
+
+export interface ShipingAddress {
+   firstName: string;
+   lastName: string;
+   address: string;
+   address2?: string;
+   zip: string;
+   city: string;
+   country: string;
+   phone: string;
 }
 
 const CART_INITIAL_STATE: CartState = {
+   isCartLoaded: false,
    cart: [],
    numberOfProducts: 0,
    subTotal: 0,
    tax: 0,
    total: 0,
+   shippingAddress: undefined,
 };
 
 export const CartProvider: FC = ({ children }) => {
@@ -29,6 +44,22 @@ export const CartProvider: FC = ({ children }) => {
       } catch (error) {
          dispatch({ type: '[Cart] - Load Cart from cookies | storage', payload: [] });
       }
+   }, []);
+
+   useEffect(() => {
+      const addressFromCookies = Cookie.get('addressFormData')
+         ? JSON.parse(Cookie.get('addressFormData')!)
+         : {
+              firstName: '',
+              lastName: '',
+              address: '',
+              address2: '',
+              zip: '',
+              city: '',
+              country: '',
+              phone: '',
+           };
+      dispatch({ type: '[Cart] - Load address from cookies', payload: addressFromCookies });
    }, []);
 
    useEffect(() => {
@@ -69,6 +100,21 @@ export const CartProvider: FC = ({ children }) => {
    const removeCartProduct = (product: ICartProduct) => {
       dispatch({ type: '[Cart] - Remove product', payload: product });
    };
+   const updateShippingAddress = (address: ShipingAddress) => {
+      const addressFormData = {
+         firstName: address.firstName,
+         lastName: address.lastName,
+         address: address.address,
+         address2: address.address2,
+         zip: address.zip,
+         city: address.city,
+         country: address.country,
+         phone: address.phone,
+      };
+
+      Cookie.set('addressFormData', JSON.stringify(addressFormData));
+      dispatch({ type: '[Cart] - Update shipping address', payload: address });
+   };
 
    return (
       <CartContext.Provider
@@ -79,6 +125,7 @@ export const CartProvider: FC = ({ children }) => {
             addProductToCart,
             updateCartQuantity,
             removeCartProduct,
+            updateShippingAddress,
          }}
       >
          {children}

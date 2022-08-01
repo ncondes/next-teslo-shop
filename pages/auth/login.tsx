@@ -34,8 +34,9 @@ const LoginPage = () => {
          return;
       }
 
-      // TODO: navigate to previous screen
-      router.replace('/');
+      // navigate to previous screen
+      const previous = router.query.p?.toString() || '/';
+      router.replace(previous);
    };
 
    return (
@@ -89,7 +90,7 @@ const LoginPage = () => {
                      </Button>
                   </Grid>
                   <Grid item xs={12} display="flex" justifyContent="flex-end">
-                     <NextLink href="/auth/register" passHref>
+                     <NextLink href={`/auth/register${router.query.p && `?p=${router.query.p.toString()}`}`} passHref>
                         <Link underline="always">Create New Account</Link>
                      </NextLink>
                   </Grid>
