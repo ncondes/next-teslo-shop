@@ -1,12 +1,15 @@
 import { Box, Button, Card, CardContent, Divider, Grid, Link, Typography } from '@mui/material';
+import Cookies from 'js-cookie';
 import NextLink from 'next/link';
-import { useContext } from 'react';
+import { useRouter } from 'next/router';
+import { useContext, useEffect } from 'react';
 import { CartList, OrderSummary } from '../../components/cart';
 import { ShopLayout } from '../../components/layouts';
 import { CartContext } from '../../context';
 import { countries } from '../../utils';
 
 const SummaryPage = () => {
+   const router = useRouter();
    const {
       shippingAddress = {
          firstName: '',
@@ -21,6 +24,12 @@ const SummaryPage = () => {
       numberOfProducts,
    } = useContext(CartContext);
    const { firstName, lastName, address, address2, zip, city, country, phone } = shippingAddress;
+
+   useEffect(() => {
+      if (!Cookies.get('addressFormData')) {
+         router.push('/checkout/address');
+      }
+   }, []);
 
    return (
       <ShopLayout title="Order Summary" pageDescription="Order Summary">

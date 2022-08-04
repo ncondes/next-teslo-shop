@@ -1,5 +1,7 @@
 import { ErrorOutlined } from '@mui/icons-material';
 import { Box, Button, Chip, Grid, Link, TextField, Typography } from '@mui/material';
+import { GetServerSideProps } from 'next';
+import { getSession, signIn } from 'next-auth/react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useContext, useState } from 'react';
@@ -38,9 +40,11 @@ const RegisterPage = () => {
          return;
       }
 
+      await signIn('credentials', { email, password });
+
       // navigate to previous screen
-      const previous = router.query.p?.toString() || '/';
-      router.replace(previous);
+      // const previous = router.query.p?.toString() || '/';
+      // router.replace(previous);
    };
 
    return (
@@ -117,6 +121,24 @@ const RegisterPage = () => {
          </form>
       </AuthLayout>
    );
+};
+
+export const getServerSideProps: GetServerSideProps = async ({ req, query }) => {
+   const session = await getSession({ req });
+   const { p = '/' } = query;
+
+   if (session) {
+      return {
+         redirect: {
+            destination: p.toString(),
+            permanent: false,
+         },
+      };
+   }
+
+   return {
+      props: {},
+   };
 };
 
 export default RegisterPage;

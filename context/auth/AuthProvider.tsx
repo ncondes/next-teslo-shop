@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { FC, useEffect, useReducer } from 'react';
 import { tesloApi } from '../../api';
@@ -20,9 +21,18 @@ export const AuthProvider: FC = ({ children }) => {
 
    const [state, dispatch] = useReducer(authReducer, AUTH_INITIAL_STATE);
 
+   const { data, status } = useSession();
+
    useEffect(() => {
-      validateToken();
-   }, []);
+      if (status === 'authenticated') {
+         dispatch({ type: '[Auth] - Login', payload: data?.user as IUser });
+      }
+   }, [data, status]);
+
+   // Custon authentication
+   // useEffect(() => {
+   //    validateToken();
+   // }, []);
 
    const loginUser = async (email: string, password: string): Promise<boolean> => {
       try {
@@ -70,10 +80,12 @@ export const AuthProvider: FC = ({ children }) => {
    };
 
    const logout = () => {
-      Cookies.remove('token');
       Cookies.remove('cart');
+      Cookies.remove('addressFormData');
 
-      router.reload();
+      signOut();
+      // Cookies.remove('token');
+      // router.reload();
    };
 
    const validateToken = async () => {
