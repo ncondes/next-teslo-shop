@@ -1,6 +1,8 @@
+import axios from 'axios';
 import Cookie from 'js-cookie';
 import { FC, useEffect, useReducer } from 'react';
-import { ICartProduct } from '../../interfaces';
+import { tesloApi } from '../../api';
+import { ICartProduct, IOrder, ShippingAddress } from '../../interfaces';
 import { CartContext, cartReducer } from './';
 
 export interface CartState {
@@ -10,18 +12,7 @@ export interface CartState {
    subTotal: number;
    tax: number;
    total: number;
-   shippingAddress?: ShipingAddress;
-}
-
-export interface ShipingAddress {
-   firstName: string;
-   lastName: string;
-   address: string;
-   address2?: string;
-   zip: string;
-   city: string;
-   country: string;
-   phone: string;
+   shippingAddress?: ShippingAddress;
 }
 
 const CART_INITIAL_STATE: CartState = {
@@ -100,7 +91,7 @@ export const CartProvider: FC = ({ children }) => {
    const removeCartProduct = (product: ICartProduct) => {
       dispatch({ type: '[Cart] - Remove product', payload: product });
    };
-   const updateShippingAddress = (address: ShipingAddress) => {
+   const updateShippingAddress = (address: ShippingAddress) => {
       const addressFormData = {
          firstName: address.firstName,
          lastName: address.lastName,
@@ -116,6 +107,50 @@ export const CartProvider: FC = ({ children }) => {
       dispatch({ type: '[Cart] - Update shipping address', payload: address });
    };
 
+   const createOrder = async (): Promise<{ hasError: boolean; message: string }> => {
+      if (!state.shippingAddress) {
+         throw new Error('There is no shipping address.');
+      }
+
+      const body: IOrder = {
+         orderItems: state.cart.map((product) => ({
+            ...product,
+            size: product.size!,
+         })),
+         shippingAddress: state.shippingAddress,
+         numberOfItems: state.numberOfProducts,
+         subTotal: state.subTotal,
+         tax: state.tax,
+         total: state.total,
+         isPaid: false,
+      };
+
+      try {
+         const { data } = await tesloApi.post<IOrder>('/orders', body);
+         dispatch({ type: '[Cart] - Order Complete' });
+
+         return {
+            hasError: false,
+            message: data._id!,
+         };
+      } catch (error) {
+         console.error(error);
+         if (axios.isAxiosError(error)) {
+            const { message } = error.response?.data as { message: string };
+
+            return {
+               hasError: true,
+               message,
+            };
+         }
+
+         return {
+            hasError: true,
+            message: 'Uncontrolled error, contact the administration.',
+         };
+      }
+   };
+
    return (
       <CartContext.Provider
          value={{
@@ -126,6 +161,9 @@ export const CartProvider: FC = ({ children }) => {
             updateCartQuantity,
             removeCartProduct,
             updateShippingAddress,
+
+            // Orders
+            createOrder,
          }}
       >
          {children}

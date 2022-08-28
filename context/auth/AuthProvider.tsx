@@ -29,7 +29,7 @@ export const AuthProvider: FC = ({ children }) => {
       }
    }, [data, status]);
 
-   // Custon authentication
+   // Custom authentication
    // useEffect(() => {
    //    validateToken();
    // }, []);

@@ -15,14 +15,15 @@ import {
 import NextLink from 'next/link';
 import { FC, useContext, useState } from 'react';
 import { CartContext } from '../../context';
-import { ICartProduct } from '../../interfaces';
+import { ICartProduct, IOrderItem } from '../../interfaces';
 import { ItemCounter } from '../ui';
 
 interface Props {
    editable?: boolean;
+   products?: IOrderItem[];
 }
 
-export const CartList: FC<Props> = ({ editable = false }) => {
+export const CartList: FC<Props> = ({ editable = false, products }) => {
    const { cart, updateCartQuantity, removeCartProduct } = useContext(CartContext);
    const [open, setOpen] = useState(false);
 
@@ -39,9 +40,11 @@ export const CartList: FC<Props> = ({ editable = false }) => {
       setOpen(false);
    };
 
+   const productsToDisplay = products ? products : cart;
+
    return (
       <>
-         {cart.map((product) => (
+         {productsToDisplay.map((product) => (
             <Grid container spacing={1} sx={{ mb: 1 }} key={product.slug + product.size}>
                <Grid item xs={3}>
                   {/* TODO: PRODUCT PAGE */}
@@ -68,7 +71,7 @@ export const CartList: FC<Props> = ({ editable = false }) => {
                            currentValue={product.quantity}
                            maxValue={10}
                            updatedQuantity={(newValue) => {
-                              onUpdateProductQuantity(product, newValue);
+                              onUpdateProductQuantity(product as ICartProduct, newValue);
                            }}
                         />
                      ) : (
@@ -97,7 +100,7 @@ export const CartList: FC<Props> = ({ editable = false }) => {
                      <Button onClick={handleClose}>Cancel</Button>
                      <Button
                         onClick={() => {
-                           removeCartProduct(product);
+                           removeCartProduct(product as ICartProduct);
                            handleClose();
                         }}
                         autoFocus
