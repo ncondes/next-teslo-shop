@@ -8,6 +8,8 @@ import '../styles/globals.css';
 import { lightTheme } from '../themes';
 
 function MyApp({ Component, pageProps }: AppProps) {
+   const AnyComponent = Component as any;
+
    return (
       <SessionProvider>
          <PayPalScriptProvider options={{ 'client-id': process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '' }}>
@@ -21,7 +23,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                      <UiProvider>
                         <ThemeProvider theme={lightTheme}>
                            <CssBaseline />
-                           <Component {...pageProps} />
+                           <AnyComponent {...pageProps} />
                         </ThemeProvider>
                      </UiProvider>
                   </CartProvider>
