@@ -132,7 +132,7 @@ export const SideMenu = () => {
                   <>
                      <Divider />
                      <ListSubheader>Admin Panel</ListSubheader>
-                     <ListItem button>
+                     <ListItem button onClick={() => navigateTo('/admin/products')}>
                         <ListItemIcon>
                            <CategoryOutlined />
                         </ListItemIcon>
